@@ -4,7 +4,6 @@ import os
 
 import torch
 from seqeval.metrics import accuracy_score, recall_score, f1_score, precision_score
-from torch.utils.data import Dataset
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForTokenClassification
 
@@ -14,119 +13,9 @@ from BERT.Model import TrainingParameters
 from BERT.evaluate import evaluate
 from BERT.train import finetune_from_sentences_tags_list
 from util import strawberry
+from util.Dataset import parse_aida_yago
 from util.list_utils import flatten_list
-
-
-class Dataset:
-
-    def __init__(self):
-        self.documents = []
-
-    def append_document(self, document):
-        self.documents.append(document)
-
-    def get_sentences_labels(self):
-        sentences = []
-        labels = []
-        for document in self.documents:
-            sentences.extend(document.sentences)
-            labels.extend(document.labels)
-        return sentences, labels
-
-
-class Document:
-
-    def __init__(self, sentences, labels, others, id=None, title=None):
-        self.id = id
-        self.title = title
-        self.sentences = sentences
-        self.labels = labels
-        self.other = others
-
-def parse_aida_yago(file_path: str):
-    fIn = open(file_path, 'r')
-
-    train = Dataset()
-    testa = Dataset()
-    testb = Dataset()
-    doc_sentences = []
-    doc_labels = []
-    doc_others = []
-    sentences = []
-    labels = []
-    others = []
-
-    for line in fIn:
-        if line.startswith('-DOCSTART-'):
-            lastNER = 'O'
-            if sentences or doc_sentences:
-                if sentences:
-                    doc_sentences.append(sentences)
-                    doc_labels.append(labels)
-                    doc_others.append(others)
-
-                doc = Document(doc_sentences, doc_labels, doc_others, id=id, title=title)
-
-                if "testa" in id:
-                    testa.append_document(doc)
-                elif "testb" in id:
-                    testb.append_document(doc)
-                else:
-                    train.append_document(doc)
-
-                doc_sentences = []
-                doc_labels = []
-                doc_others = []
-                sentences = []
-                labels = []
-                others = []
-            doc_metadata = line[line.find("(") + 1:line.find(")")].split(' ')
-            id = doc_metadata[0]
-            title = doc_metadata[1]
-            continue
-
-        if len(line.strip()) == 0:
-            lastNER = 'O'
-            if sentences:
-                doc_sentences.append(sentences)
-                doc_labels.append(labels)
-                doc_others.append(others)
-                sentences = []
-                labels = []
-                others = []
-            continue
-
-        splits = line.strip().split('\t')
-
-        word = splits[0]
-        ner = splits[1] if len(splits) > 1 else 'O'
-
-        if ner[0] == 'I':
-            if ner[1:] != lastNER[1:]:
-                ner = 'B' + ner[1:]
-
-        sentences.append(word)
-        labels.append(ner)
-        others.append(splits[2:] if len(splits) > 2 else [])
-
-        lastNER = ner
-
-    if sentences or doc_sentences:
-        if sentences:
-            doc_sentences.append(sentences)
-            doc_labels.append(labels)
-            doc_others.append(others)
-
-        doc = Document(doc_sentences, doc_labels, doc_others, id=id, title=title)
-
-        if "testa" in id:
-            testa.append_document(doc)
-        elif "testb" in id:
-            testb.append_document(doc)
-        else:
-            train.append_document(doc)
-
-    return train, testa, testb
+from util.EL_prediction_file_util import add_gold_entity_to_NER_iob_output
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -155,15 +44,16 @@ if __name__ == '__main__':
     print(max([len(x) for x in train]))
 
     parameters = TrainingParameters.from_args(args)
+    parameters.set_max_epochs(2)
 
     tokenizer = AutoTokenizer.from_pretrained(model)
 
     # Create vocabulary
-    # label_vocab = dict(pre_trained_model.config.label2id)
     label_vocab = bert_utils.create_label_vocab(labels_train + labels_testa + labels_testb)
     pre_trained_model = AutoModelForTokenClassification.from_pretrained(model, num_labels=len(label_vocab))
 
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
+    print(device)
 
     print("Training...")
     model = NERModel(pre_trained_model, tokenizer, label_vocab, device=device)
@@ -178,7 +68,7 @@ if __name__ == '__main__':
     test_sentences = []
     test_labels = []
     predicted_labels = []
-    with open(model_path+ '/output/testbout.txt', 'w') as outfile:
+    with open(model_path+ '/output/output.iob', 'w') as outfile:
         for test_document in tqdm(documents_testb.documents, desc="Output prediction"):
             outfile.write('-DOCSTART-\t({} {})\n'.format(test_document.id, test_document.title))
             for test_sent, test_label in zip(test_document.sentences, test_document.labels):
@@ -214,6 +104,8 @@ if __name__ == '__main__':
     output_dir = model_path + '/output'
     with open(output_dir + '/eval_results.txt', 'w') as outfile:
         json.dump(metrics, outfile, indent=4)
+
+    add_gold_entity_to_NER_iob_output(output_dir + '/output.iob', 'resources/AIDA-YAGO2-dataset.tsv')
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
