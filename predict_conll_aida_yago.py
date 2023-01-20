@@ -10,8 +10,8 @@ from transformers import AutoTokenizer
 
 from BERT.Model import NERModel
 from BERT.Model import TrainingParameters
-from BERT.metrics import calculate_relaxed_metric
-from util import xlarge
+from util.relaxed_metrics import calculate_relaxed_metric
+from util import strawberry
 from util.list_utils import flatten_list
 
 
@@ -200,8 +200,7 @@ if __name__ == '__main__':
         'recall': recall_score(test_labels, predicted_labels),
         'f1': f1_score(test_labels, predicted_labels),
         'specificity': specificity(flatten_list(test_labels), flatten_list(predicted_labels)),
-        # 'report': classification_report(test_labels, predicted_labels, scheme=IOB2),
-        'strawberry': xlarge.score_from_iob(test_labels_s, predicted_labels_s, print_results=True, output_dict=str_stats),
+        'strawberry': strawberry.score_from_iob(test_labels_s, predicted_labels_s, print_results=True, output_dict=str_stats),
         'strawberry_stats': str_stats,
     }
     relaxed_results = calculate_relaxed_metric(test_labels, predicted_labels)
@@ -215,7 +214,6 @@ if __name__ == '__main__':
     print('Recall: ' + str(metrics['recall']))
     print('F1 score: ' + str(metrics['f1']))
     print('Specificity: ' + str(metrics['specificity']))
-    # print(metrics['report'])
     print('Strawberry: ' + str(metrics['strawberry']))
     print('Relaxed Precision: ' + str(metrics["overall_precision_relaxed"]))
     print('Relaxed Recall: ' + str(metrics["overall_recall_relaxed"]))

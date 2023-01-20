@@ -13,7 +13,7 @@ from BERT.Model import NERModel
 from BERT.Model import TrainingParameters
 from BERT.evaluate import evaluate
 from BERT.train import finetune_from_sentences_tags_list
-from util import xlarge
+from util import strawberry
 from util.list_utils import flatten_list
 
 
@@ -203,7 +203,7 @@ if __name__ == '__main__':
         'precision': precision_score(test_labels, predicted_labels),
         'recall': recall_score(test_labels, predicted_labels),
         'f1': f1_score(test_labels, predicted_labels),
-        'strawberry': xlarge.score_from_iob(test_labels_s, predicted_labels_s, print_results=True),
+        'strawberry': strawberry.score_from_iob(test_labels_s, predicted_labels_s, print_results=True),
     }
 
     print('Accuracy: ' + str(metrics['accuracy']))
