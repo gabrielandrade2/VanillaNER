@@ -19,8 +19,8 @@ from util.EL_prediction_file_util import add_gold_entity_to_NER_iob_output
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, help='Model')
-    parser.add_argument('--dataset', type=str, help='Dataset')
+    parser.add_argument('--model_path', type=str, help='Model', default='results/test')
+    parser.add_argument('--dataset', type=str, help='Dataset', default='resources/AIDA-YAGO2-dataset_0.tsv')
     parser.add_argument('--device', type=str, help='Device', default='cuda')
     TrainingParameters.add_parser_arguments(parser)
     args = parser.parse_args()
