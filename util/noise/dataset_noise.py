@@ -78,6 +78,10 @@ def __generate_noise(dataset_files, word_amounts):
 
     for word_amount in word_amounts:
         for noise_level in [p/10 for p in range(1, 11)]:
+            print("Noise_level", noise_level)
+            total = np.zeros(dataset_instances)
+            expanded = np.zeros(dataset_instances)
+            overlap = np.zeros(dataset_instances)
             folder = 'resources/noise_{}/noise_{}'.format(word_amount, noise_level)
             os.makedirs(folder, exist_ok=True)
             folders.append(folder)
@@ -98,9 +102,12 @@ def __generate_noise(dataset_files, word_amounts):
                         # Modify all documents except for the test set
                         if ('testb' not in doc[4]):
                             for j in range(len(labels)):
+                                enter_once = False
                                 if labels[j].startswith('B'):
+                                    total[i] += 1
                                     words = []
                                     if __decision(noise_level):
+                                        expanded[i] += 1
                                         # 1 - backward_noise, 2 - forward_noise, 3 - both
                                         noise_type = np.random.choice([1, 2, 3])
                                         if noise_type & 1:
@@ -116,6 +123,10 @@ def __generate_noise(dataset_files, word_amounts):
                                                     #     max = k
                                                     # else:
                                                     #     break
+
+                                                if not labels[j - k].startswith('O') and not enter_once:
+                                                    enter_once = True
+                                                    overlap[i] += 1
 
                                                 for k in range(1, max + 1):
                                                     if k == max:
@@ -139,6 +150,11 @@ def __generate_noise(dataset_files, word_amounts):
                                                     #     doc[2][j + k] = doc[2][j]
                                                     # else:
                                                     #     break
+
+                                                    if not labels[j + k].startswith('O') and not enter_once:
+                                                        enter_once = True
+                                                        overlap[i] += 1
+
                                                     labels[j + k] = 'I' + labels[j][1:]
                                                     doc[3][j + k] = doc[3][j]
                                             except IndexError:
@@ -156,6 +172,12 @@ def __generate_noise(dataset_files, word_amounts):
 
                     fout.flush()
                     fout.close()
+
+            total = np.mean(total)
+            print()
+            print("Expanded entities", np.mean(expanded) / total * 100, "%")
+            print("Merged entities", np.mean(overlap) / total * 100, "%")
+            print()
 
     return folders
 def __fix_mention_text(noisy_folders):
