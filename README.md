@@ -12,7 +12,7 @@ In this repository we provide the scripts used for model finetunning and predict
 
 Requirements are listed in `requirements.txt` and can be installed using `pip install -r requirements.txt`.
 
-The code was originally run under `Python 3.9`, however it should work with Python 3.6+
+The code was originally run under `Python 3.9`, however it should work with Python 3.6+.
 
 ## Usage
 
@@ -26,7 +26,7 @@ This script will generate 10 dataset variants for noise levels from 10% to 100% 
 
 No parameters are provided for modifying the behavior of this script at this time, however it is possible to modify the script to change the number of variants generated, the noise levels, or the output directory by modifying the code, as all of these inputs are variable dependent.
 
-### Finetunning
+### Fine-tuning
 
 The script for model training is `main_conll_aida_yago.py`. 
 
@@ -54,3 +54,15 @@ The prediction script takes the same parameters as the finetunning script. Examp
 Output predictions (for both scripts) are saved in a new `output` folder under the `model_path` directory. 
 - `output.iob` contains the predictions for the test set in IOB format.
 - `eval_results.txt` contains the evaluation metrics calculated for the results (accuracy, precision, recall and F1).
+
+### Reproduction scripts
+
+In order to reproduce the results presented in the paper, two bash scripts are provided: `run_finetune.py` and `run_predict.py`.
+
+These scripts execute the same python code provided in the previous steps, but automatically run the loops to produce the results for the 10 instances for all the noise levels.
+
+## Notes
+
+Rust compiler may be necessary to install the `pytokenizations` library. If you are using a Linux distribution, you can install it using `curl https://sh.rustup.rs -sSf | sh`, or if it is a Mac byt using `brew install rust`.
+
+## Citation

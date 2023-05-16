@@ -12,15 +12,17 @@ from BERT.Model import NERModel
 from BERT.Model import TrainingParameters
 from BERT.evaluate import evaluate
 from BERT.train import finetune_from_sentences_tags_list
-from util import strawberry
 from util.Dataset import parse_aida_yago
 from util.list_utils import flatten_list
 from util.EL_prediction_file_util import add_gold_entity_to_NER_iob_output
 
+'''
+Script used for training a BERT model on the AIDA-CoNLL-YAGO dataset and evaluating it on the testb set.
+'''
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, help='Model', default='results/test')
-    parser.add_argument('--dataset', type=str, help='Dataset', default='resources/AIDA-YAGO2-dataset_0.tsv')
+    parser.add_argument('--model_path', type=str, help='Model', default='results/trained')
+    parser.add_argument('--dataset', type=str, help='Dataset', default='resources/AIDA-YAGO2-dataset.tsv')
     parser.add_argument('--device', type=str, help='Device', default='cuda')
     TrainingParameters.add_parser_arguments(parser)
     args = parser.parse_args()
@@ -32,7 +34,6 @@ if __name__ == '__main__':
     model = "bert-base-cased"
     model_path = args.model_path
 
-    # documents_train, documents_testa, documents_testb = parse_aida_yago('resources/AIDA-YAGO2-dataset.tsv')
     documents_train, documents_testa, documents_testb = parse_aida_yago(args.dataset)
 
     train, labels_train = documents_train.get_sentences_labels()
@@ -93,7 +94,6 @@ if __name__ == '__main__':
         'precision': precision_score(test_labels, predicted_labels),
         'recall': recall_score(test_labels, predicted_labels),
         'f1': f1_score(test_labels, predicted_labels),
-        'strawberry': strawberry.score_from_iob(test_labels_s, predicted_labels_s, print_results=True),
     }
 
     print('Accuracy: ' + str(metrics['accuracy']))

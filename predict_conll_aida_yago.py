@@ -12,13 +12,15 @@ from BERT.Model import TrainingParameters
 from util.Dataset import parse_aida_yago
 from util.EL_prediction_file_util import add_gold_entity_to_NER_iob_output
 from util.relaxed_metrics import calculate_relaxed_metric
-from util import strawberry
 from util.list_utils import flatten_list
 
+'''
+Script used for predicting on the AIDA-CoNLL-YAGO test dataset using a trained BERT model.
+'''
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, help='Model')
-    parser.add_argument('--dataset', type=str, help='Dataset')
+    parser.add_argument('--model_path', type=str, help='Model', default='results/trained')
+    parser.add_argument('--dataset', type=str, help='Dataset', default='resources/AIDA-YAGO2-dataset.tsv')
     parser.add_argument('--device', type=str, help='Device', default='cuda')
     TrainingParameters.add_parser_arguments(parser)
     args = parser.parse_args()
@@ -26,16 +28,11 @@ if __name__ == '__main__':
     model = "bert-base-cased"
     model_path = args.model_path
 
-    # documents_train, documents_testa, documents_testb = parse_aida_yago('resources/AIDA-YAGO2-dataset.tsv')
     documents_train, documents_testa, documents_testb = parse_aida_yago(args.dataset)
 
-    train, labels_train = documents_train.get_sentences_labels()
-    testa, labels_testa = documents_testa.get_sentences_labels()
     testb, labels_testb = documents_testb.get_sentences_labels()
 
-    print(max([len(x) for x in testa]))
     print(max([len(x) for x in testb]))
-    print(max([len(x) for x in train]))
 
     print("Loading...")
     tokenizer = AutoTokenizer.from_pretrained(model)
@@ -76,8 +73,6 @@ if __name__ == '__main__':
         'precision': precision_score(test_labels, predicted_labels),
         'recall': recall_score(test_labels, predicted_labels),
         'f1': f1_score(test_labels, predicted_labels),
-        'strawberry': strawberry.score_from_iob(test_labels_s, predicted_labels_s, print_results=True, output_dict=str_stats),
-        'strawberry_stats': str_stats,
     }
     relaxed_results = calculate_relaxed_metric(test_labels, predicted_labels)
 
@@ -89,7 +84,6 @@ if __name__ == '__main__':
     print('Precision: ' + str(metrics['precision']))
     print('Recall: ' + str(metrics['recall']))
     print('F1 score: ' + str(metrics['f1']))
-    print('Strawberry: ' + str(metrics['strawberry']))
     print('Relaxed Precision: ' + str(metrics["overall_precision_relaxed"]))
     print('Relaxed Recall: ' + str(metrics["overall_recall_relaxed"]))
     print('Relaxed F1: ' + str(metrics["overall_f1_relaxed"]))

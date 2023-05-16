@@ -3,7 +3,6 @@ import json
 from seqeval.metrics import accuracy_score, precision_score, f1_score, recall_score
 
 from BERT.Model import NERModel
-from util import strawberry
 from util.list_utils import list_size, flatten_list
 from util.text_utils import exclude_long_sentences
 
@@ -41,7 +40,6 @@ def evaluate(model: NERModel, test_sentences: list, test_labels: list, save_dir:
         'precision': precision_score(test_labels, predicted_labels),
         'recall': recall_score(test_labels, predicted_labels),
         'f1': f1_score(test_labels, predicted_labels),
-        'strawberry': strawberry.score_from_iob(flatten_list(test_labels), flatten_list(predicted_labels), print_results=True),
     }
 
     if print_report:
@@ -49,7 +47,6 @@ def evaluate(model: NERModel, test_sentences: list, test_labels: list, save_dir:
         print('Precision: ' + str(metrics['precision']))
         print('Recall: ' + str(metrics['recall']))
         print('F1 score: ' + str(metrics['f1']))
-        print('Strawberry: ' + str(metrics['strawberry']))
 
     if save_dir is not None:
         with open(save_dir + '/test_metrics.txt', 'w') as f:
