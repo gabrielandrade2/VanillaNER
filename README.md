@@ -1,6 +1,6 @@
 # VanillaNER
 
-VanillaNER is a simple and low-effort Named Entity Recognition (NER) system, used for evaluation of boundary-relaxed named entity annotation in the paper "[Comparative evaluation of boundary-relaxed annotation for Entity Linking Performance](link)".
+VanillaNER is a simple and low-effort Named Entity Recognition (NER) system, used for evaluation of boundary-relaxed named entity annotation in the paper "[Comparative evaluation of boundary-relaxed annotation for Entity Linking Performance](https://aclanthology.org/2023.acl-long.458/)".
 
 It is based on the `bert-base-cased` model provided by [HuggingFace](https://huggingface.co/bert-base-cased) library and compatible with Python 3.6+. 
 
@@ -66,3 +66,5 @@ These scripts execute the same python code provided in the previous steps, but a
 Rust compiler may be necessary to install the `pytokenizations` library. If you are using a Linux distribution, you can install it using `curl https://sh.rustup.rs -sSf | sh`, or if it is a Mac byt using `brew install rust`.
 
 ## Citation
+
+Gabriel Herman Bernardim Andrade, Shuntaro Yada, and Eiji Aramaki. 2023. Comparative evaluation of boundary-relaxed annotation for Entity Linking performance. In Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 8238–8253, Toronto, Canada. Association for Computational Linguistics.
